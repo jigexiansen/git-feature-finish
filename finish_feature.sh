@@ -6,6 +6,14 @@ if [ ! -d ".git" ]; then
   exit 1
 fi
 
+# 确认远端主分支是否是 master
+read -p "请确认远端主分支是否是 master (y/n): " is_master
+if [ "$is_master" != "y" ]; then
+  read -p "请输入远端主分支名称 (例如：main): " main_branch
+else
+  main_branch="master"
+fi
+
 # 提示输入分支名称
 read -p "请输入分支名称 (例如：feature/branch-name): " branch_name
 
@@ -19,9 +27,9 @@ if [ "$input_mode" = "i" ]; then
   read -p "请输入需求ID: " demand_id
   read -p "请输入需求地址: " demand_url
   read -p "是否有单测 (是/否): " has_unit_test
-  read -p "Codereview (例如：@程咬金): " code_review
-  read -p "开发人员 (例如：@伽罗): " developer
-  read -p "测试人员 (例如：@夏洛特): " tester
+  read -p "Codereview (例如：@张翠花): " code_review
+  read -p "开发人员 (例如：@王美丽): " developer
+  read -p "测试人员 (例如：@高大尚): " tester
 
   # 生成上线内容
   release_notes="上线内容：$online_content
@@ -82,12 +90,12 @@ if [ "$confirm_version" != "y" ]; then
 fi
 
 # 确保分支最新
-echo "正在确保 develop 和 master 分支是最新的..."
+echo "正在确保 develop 和 $main_branch 分支是最新的..."
 git checkout develop
 git pull origin develop
-git checkout master
-git pull origin master
-echo "develop 和 master 分支已更新。"
+git checkout $main_branch
+git pull origin $main_branch
+echo "develop 和 $main_branch 分支已更新。"
 
 # 确认当前 Feature 分支
 echo "正在切换到指定的 Feature 分支: $branch_name..."
@@ -122,7 +130,7 @@ echo "Release 分支 $next_version 已创建。"
 # 完成 Release 分支
 echo "正在完成 Release 分支: $next_version..."
 git flow release finish $next_version
-echo "Release 分支 $next_version 已完成并合并到 master 和 develop 分支。"
+echo "Release 分支 $next_version 已完成并合并到 $main_branch 和 develop 分支。"
 
 # 输入上线内容并打标签
 echo "正在输入上线内容并打标签..."
@@ -133,7 +141,7 @@ echo "上线内容已输入并打标签。"
 echo "Release 分支的创建和合并已完成。"
 
 # 提示用户执行推送命令
-echo "请执行以下命令推送 develop 和 master 分支，以及新标签："
+echo "请执行以下命令推送 develop 和 $main_branch 分支，以及新标签："
 echo "推送 develop 分支: git push origin develop"
-echo "推送 master 分支: git push origin master"
+echo "推送 $main_branch 分支: git push origin $main_branch"
 echo "推送新标签: git push origin --tags"
