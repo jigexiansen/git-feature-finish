@@ -6,6 +6,32 @@ if [ ! -d ".git" ]; then
   exit 1
 fi
 
+# 检查是否安装了 git flow
+if ! command -v git-flow &> /dev/null; then
+  echo "未检测到 git flow，请先安装 git flow。"
+  echo "安装命令如下："
+  echo "Mac: brew install git-flow-avh"
+  echo "Ubuntu: sudo apt-get install git-flow"
+  echo "CentOS: sudo yum install gitflow"
+  exit 1
+fi
+
+# 检查是否安装了 wget
+if ! command -v wget &> /dev/null; then
+  echo "未检测到 wget，请先安装 wget。"
+  echo "安装命令如下："
+  echo "Mac: brew install wget"
+  echo "Ubuntu: sudo apt-get install wget"
+  echo "CentOS: sudo yum install wget"
+  exit 1
+fi
+
+# 检查是否初始化了 git flow
+if ! git config --get-regexp 'gitflow\..*' &> /dev/null; then
+  echo "当前仓库未初始化 git flow，请先运行 'git flow init'。"
+  exit 1
+fi
+
 # 确认远端主分支是否是 master
 read -p "请确认远端主分支是否是 master (y/n): " is_master
 if [ "$is_master" != "y" ]; then
@@ -45,7 +71,11 @@ else
 fi
 
 # 查询最新版本号
-latest_tag=$(git describe --tags $(git rev-list --tags --max-count=1))
+latest_tag=$(git describe --tags $(git rev-list --tags --max-count=1) 2>/dev/null)
+if [ -z "$latest_tag" ]; then
+  echo "未找到任何标签，无法获取最新版本号。"
+  latest_tag="v0.0.0"
+fi
 echo "最新版本号: $latest_tag"
 
 # 计算下一个版本号的通用函数
@@ -114,27 +144,42 @@ fi
 # 完成 Feature 分支
 feature_branch=$(echo $branch_name | sed 's/^feature\///')
 echo "正在完成 Feature 分支: $feature_branch..."
-git flow feature finish $feature_branch
+if ! git flow feature finish $feature_branch; then
+  echo "完成 Feature 分支时出错，请检查错误信息。"
+  exit 1
+fi
 echo "Feature 分支 $feature_branch 已完成并合并到 develop 分支。"
 
 # 推送 develop 分支
 echo "正在推送 develop 分支..."
-git push origin develop
+if ! git push origin develop; then
+  echo "推送 develop 分支时出错，请检查错误信息。"
+  exit 1
+fi
 echo "develop 分支已推送到远程仓库。"
 
 # 创建 Release 分支
 echo "正在创建 Release 分支: $next_version..."
-git flow release start $next_version
+if ! git flow release start $next_version; then
+  echo "创建 Release 分支时出错，请检查错误信息。"
+  exit 1
+fi
 echo "Release 分支 $next_version 已创建。"
 
 # 完成 Release 分支
 echo "正在完成 Release 分支: $next_version..."
-git flow release finish $next_version
+if ! git flow release finish $next_version; then
+  echo "完成 Release 分支时出错，请检查错误信息。"
+  exit 1
+fi
 echo "Release 分支 $next_version 已完成并合并到 $main_branch 和 develop 分支。"
 
 # 输入上线内容并打标签
 echo "正在输入上线内容并打标签..."
-git tag -a $next_version -m "$release_notes"
+if ! git tag -a $next_version -m "$release_notes"; then
+  echo "打标签时出错，请检查错误信息。"
+  exit 1
+fi
 echo "上线内容已输入并打标签。"
 
 # 提示完成
