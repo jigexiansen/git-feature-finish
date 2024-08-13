@@ -48,7 +48,14 @@ if ! git config --get-regexp 'gitflow\..*' &> /dev/null; then
 fi
 
 # 提示输入分支名称
-read -p "请输入分支名称 (例如：feature/branch-name): " branch_name
+while true; do
+  read -p "请输入分支名称 (例如：feature/branch-name): " branch_name
+  if [[ -z "${branch_name// }" ]]; then
+    echo "输入的分支名称不正确，请重新输入。"
+  else
+    break
+  fi
+done
 
 # 提示输入上线内容
 echo "请粘贴完整的上线内容，或输入 i 后按 Enter 键开始逐项输入上线内容。"
