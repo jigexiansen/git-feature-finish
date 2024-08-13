@@ -94,7 +94,7 @@ echo "最新版本号: $latest_tag"
 
 # 计算下一个版本号的通用函数
 increment_version() {
-  local version=\$1
+  local version=$1
   local IFS='.'
   local -a parts=($version)
   local carry=1
@@ -129,7 +129,7 @@ fi
 echo "下一个版本号: $next_version"
 read -p "确认下一个版本号是否正确 (y/n): " confirm_version
 
-if [ "$confirm_version" != "y" ];then
+if [ "$confirm_version" != "y" ]; then
   read -p "请输入正确的下一个版本号 (例如：v1.0.0.01): " next_version
 fi
 
@@ -149,7 +149,7 @@ echo "当前分支: $(git branch --show-current)"
 
 # 确认 Feature 分支是否正确
 read -p "确认 Feature 分支是否正确 (y/n): " confirm_branch
-if [ "$confirm_branch" != "y" ];then
+if [ "$confirm_branch" != "y" ]; then
   read -p "请输入要完成的 Feature 分支名称: " branch_name
   git checkout $branch_name
   echo "切换到指定的 Feature 分支: $branch_name"
@@ -202,5 +202,5 @@ echo "Release 分支的创建和合并已完成。"
 # 提示用户执行推送命令
 echo "请执行以下命令推送 develop 和 $main_branch 分支，以及新标签："
 echo "推送 develop 分支: git push origin develop"
-echo "推送 $main_branch 分支: git push origin $main_branch"
+echo "推推 $main_branch 分支: git push origin $main_branch"
 echo "推送新标签: git push origin --tags"
