@@ -26,18 +26,25 @@ if ! command -v wget &> /dev/null; then
   exit 1
 fi
 
-# 检查是否初始化了 git flow
-if ! git config --get-regexp 'gitflow\..*' &> /dev/null; then
-  echo "当前仓库未初始化 git flow，请先运行 'git flow init'。"
-  exit 1
-fi
-
 # 确认远端主分支是否是 master
 read -p "请确认远端主分支是否是 master (y/n): " is_master
 if [ "$is_master" != "y" ]; then
   read -p "请输入远端主分支名称 (例如：main): " main_branch
 else
   main_branch="master"
+fi
+
+# 检查是否初始化了 git flow
+if ! git config --get-regexp 'gitflow\..*' &> /dev/null; then
+  echo "当前仓库未初始化 git flow，请先运行 'git flow init' 并按照以下提示进行配置："
+  echo "1. Branch name for production releases: $main_branch"
+  echo "2. Branch name for 'next release' development: develop"
+  echo "3. Feature branches: [按回车]"
+  echo "4. Release branches: [按回车]"
+  echo "5. Hotfix branches: [按回车]"
+  echo "6. Support branches: [按回车]"
+  echo "7. Version tag prefix: [按回车]"
+  exit 1
 fi
 
 # 提示输入分支名称
@@ -53,18 +60,18 @@ if [ "$input_mode" = "i" ]; then
   read -p "请输入需求ID: " demand_id
   read -p "请输入需求地址: " demand_url
   read -p "是否有单测 (是/否): " has_unit_test
-  read -p "Codereview (例如：@张翠花): " code_review
-  read -p "开发人员 (例如：@王美丽): " developer
-  read -p "测试人员 (例如：@高大尚): " tester
+  read -p "Codereview (例如：张翠花): " code_review
+  read -p "开发人员 (例如：王美丽): " developer
+  read -p "测试人员 (例如：高大尚): " tester
 
   # 生成上线内容
   release_notes="上线内容：$online_content
 需求ID：$demand_id
 需求地址：$demand_url
 是否有单测：$has_unit_test
-Codereview：$code_review
-开发人员：$developer
-测试人员：$tester"
+Codereview：@$code_review
+开发人员：@$developer
+测试人员：@$tester"
 else
   echo "请粘贴上线内容，然后按 Ctrl+D 结束输入："
   release_notes=$(cat)
@@ -115,7 +122,7 @@ fi
 echo "下一个版本号: $next_version"
 read -p "确认下一个版本号是否正确 (y/n): " confirm_version
 
-if [ "$confirm_version" != "y" ]; then
+if [ "$confirm_version" != "y" ];then
   read -p "请输入正确的下一个版本号 (例如：v1.0.0.01): " next_version
 fi
 
@@ -135,7 +142,7 @@ echo "当前分支: $(git branch --show-current)"
 
 # 确认 Feature 分支是否正确
 read -p "确认 Feature 分支是否正确 (y/n): " confirm_branch
-if [ "$confirm_branch" != "y" ]; then
+if [ "$confirm_branch" != "y" ];then
   read -p "请输入要完成的 Feature 分支名称: " branch_name
   git checkout $branch_name
   echo "切换到指定的 Feature 分支: $branch_name"
